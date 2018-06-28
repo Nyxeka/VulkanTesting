@@ -90,7 +90,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN32\include;C:\VulkanSDK\1.1.77.0\Include;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN32\include;C:\VulkanSDK\1.1.77.0\Include;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glm;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\VulkanMemoryAllocator\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -123,7 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN32\include;C:\VulkanSDK\1.1.77.0\Include;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glm</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glfw-3.2.1.bin.WIN32\include;C:\VulkanSDK\1.1.77.0\Include;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\glm;C:\Users\njhyl\Documents\Visual Studio 2017\Libraries\VulkanMemoryAllocator\src</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -167,7 +167,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag" />
-    <None Include="shader.vert" />
+    <None Include="shaders\shader.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
