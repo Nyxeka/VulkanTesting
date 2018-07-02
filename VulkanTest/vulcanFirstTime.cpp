@@ -123,11 +123,16 @@ struct Vertex {
 };
 
 const std::vector<Vertex> vertices = { 
-	{{ 0.0f,-0.5f }, { 1.0f,1.0f,1.0f }},
-	{{ 0.5f, 0.5f }, { 0.0f,1.0f,0.0f }},
-	{{ -0.5f, 0.5f }, { 0.0f,0.0f,1.0f }} };
+	{{-0.5f,-0.5f},   { 1.0f,0.0f,0.0f }},
+	{{ 0.0f,-0.5f },  { 0.0f,1.0f,0.0f }},
+	{{ 0.5f, 0.5f },  { 0.0f,0.0f,1.0f }},
+	{{ -0.5f, 0.5f }, { 1.0f,1.0f,1.0f }} };
 
-
+// now we're going to create an index for each vert to represent our two polygons in the index buffer
+// most slightly older
+const std::vector<uint16_t> indices = {
+	0, 1, 2, 2, 3, 0
+};
 
 class HelloTriangleApplication 
 {
