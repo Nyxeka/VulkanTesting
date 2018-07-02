@@ -124,7 +124,7 @@ struct Vertex {
 
 const std::vector<Vertex> vertices = { 
 	{{-0.5f,-0.5f},   { 1.0f,0.0f,0.0f }},
-	{{ 0.0f,-0.5f },  { 0.0f,1.0f,0.0f }},
+	{{ 0.5f,-0.5f },  { 0.0f,1.0f,0.0f }},
 	{{ 0.5f, 0.5f },  { 0.0f,0.0f,1.0f }},
 	{{ -0.5f, 0.5f }, { 1.0f,1.0f,1.0f }} };
 
@@ -177,6 +177,9 @@ private:
 
 	VkBuffer vertexBuffer;
 	VmaAllocation vertexBufferAllocation;
+
+	VkBuffer indexBuffer;
+	VmaAllocation indexBufferAllocation;
 	//VkDeviceMemory vertexBufferMemory;
 
 	VmaAllocator allocator;
@@ -214,6 +217,7 @@ private:
         createCommandPool();
 		createMemoryAllocator();
         createVertexBuffer();
+		createIndexBuffer();
         createCommandBuffers();
         createSyncObjects();
     }
@@ -261,8 +265,9 @@ private:
         vkFreeMemory(device, vertexBufferMemory, nullptr);*/
 
 		vmaDestroyBuffer(allocator, vertexBuffer, vertexBufferAllocation);
+		vmaDestroyBuffer(allocator, indexBuffer, indexBufferAllocation);
 		vmaDestroyAllocator(allocator);
-		
+
         for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
             vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
             vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
@@ -413,6 +418,31 @@ private:
 		vmaDestroyBuffer(allocator, stagingBuffer, stagingBufferAllocation);
 	}
 
+	void createIndexBuffer() {
+		VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+		VkBuffer stagingBuffer;
+		VmaAllocation stagingBufferAllocation;
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferAllocation);
+
+		void* data; // empty memory pointer
+
+
+					// vkMapMemory(device, constantBufferAllocation, 0, bufferSize, 0, &data); // map out the memory and point our data pointer at it.
+		vmaMapMemory(allocator, stagingBufferAllocation, &data);
+		memcpy(data, indices.data(), (size_t)bufferSize); // copy the vertex data to the memory we have mapped while we know where it is.
+		vmaUnmapMemory(allocator, stagingBufferAllocation);
+		// vkUnmapMemory(device, stagingBufferMemory); // we don't care where the memory is anymore, now that we know that the vertex data is in there.
+
+		createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferAllocation);
+
+		copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+		//vkDestroyBuffer(device, stagingBuffer, nullptr);
+		//vkFreeMemory(device, stagingBufferMemory, nullptr);
+		vmaDestroyBuffer(allocator, stagingBuffer, stagingBufferAllocation);
+	}
+
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VmaAllocation& bufferMemory) {
 		
 		QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
@@ -552,7 +582,9 @@ private:
 				VkDeviceSize offsets[] = { 0 };
 				vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-				vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+				vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+				vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 			vkCmdEndRenderPass(commandBuffers[i]);
 
