@@ -17,61 +17,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <chrono>
 #include <array>
+#include <boost/program_options.hpp>
 
-const int WIDTH = 800;
-const int HEIGHT = 600;
 
-const int MAX_FRAMES_IN_FLIGHT = 2;
-
-const std::vector<const char*> validationLayers = {
-	"VK_LAYER_LUNARG_standard_validation"
-};
-
-const std::vector<const char*> deviceExtensions = {
-	VK_KHR_SWAPCHAIN_EXTENSION_NAME
-};
-
-// simply used for reading bytes from a file into a buffer.
-static std::vector<char> readFile(const std::string& filename) {
-	std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-	if (!file.is_open()) {
-		throw std::runtime_error("failed to open file!");
-	}
-
-	size_t fileSize = (size_t)file.tellg();
-	std::vector<char> buffer(fileSize);
-
-	file.seekg(0);
-	file.read(buffer.data(), fileSize);
-
-	file.close();
-
-	return buffer;
-}
-
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
-const bool enableValidationLayers = true;
-#endif
-
-VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
-	auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-	if (func != nullptr) {
-		return func(instance, pCreateInfo, pAllocator, pCallback);
-	}
-	else {
-		return VK_ERROR_EXTENSION_NOT_PRESENT;
-	}
-}
-
-void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
-	auto func = (PFN_vkDestroyDebugReportCallbackEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
-	if (func != nullptr) {
-		func(instance, callback, pAllocator);
-	}
-}
+////////////////////////////////
+// HELPER STRUCTS:
+////////////////////////////////
 
 struct QueueFamilyIndices {
 	int graphicsFamily = -1;
@@ -122,18 +73,6 @@ struct Vertex {
 	}
 };
 
-const std::vector<Vertex> vertices = { 
-	{{-0.5f,-0.5f},   { 1.0f,0.0f,0.0f }},
-	{{ 0.5f,-0.5f },  { 0.0f,1.0f,0.0f }},
-	{{ 0.5f, 0.5f },  { 0.0f,0.0f,1.0f }},
-	{{ -0.5f, 0.5f }, { 1.0f,1.0f,1.0f }} };
-
-// now we're going to create an index for each vert to represent our two polygons in the index buffer
-// most slightly older
-const std::vector<uint16_t> indices = {
-	0, 1, 2, 2, 3, 0
-};
-
 struct UniformBufferObject { 
 	glm::mat4 model;
 	glm::mat4 view;
@@ -158,6 +97,10 @@ bool Block::operator==(Block const &block) {
 		return true;
 	return false;
 }
+
+////////////////////////////////
+// CLASS OBJECTS:
+////////////////////////////////
 
 class BufferManager
 {
@@ -185,6 +128,30 @@ public:
 	}
 
 private:
+
+	const int WIDTH = 800;
+	const int HEIGHT = 600;
+
+	const int MAX_FRAMES_IN_FLIGHT = 2;
+
+
+#ifdef NDEBUG
+	const bool enableValidationLayers = false;
+#else
+	const bool enableValidationLayers = true;
+#endif
+
+	const std::vector<Vertex> vertices = {
+		{ { -0.5f,-0.5f },{ 1.0f,0.0f,0.0f } },
+		{ {  0.5f,-0.5f },{ 0.0f,1.0f,0.0f } },
+		{ {  0.5f, 0.5f },{ 0.0f,0.0f,1.0f } },
+		{ { -0.5f, 0.5f },{ 1.0f,1.0f,1.0f } } };
+
+	// now we're going to create an index for each vert to represent our two polygons in the index buffer
+	// most slightly older
+	const std::vector<uint16_t> indices = {
+		0, 1, 2, 2, 3, 0
+	};
 
 	//create a blank window pointer
 	GLFWwindow* window;
@@ -1394,6 +1361,50 @@ private:
 			i++;
 		}
 		return indices;
+	}
+
+	// util stuff:
+	std::vector<char> readFile(const std::string& filename) {
+		std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+		if (!file.is_open()) {
+			throw std::runtime_error("failed to open file!");
+		}
+
+		size_t fileSize = (size_t)file.tellg();
+		std::vector<char> buffer(fileSize);
+
+		file.seekg(0);
+		file.read(buffer.data(), fileSize);
+
+		file.close();
+
+		return buffer;
+	}
+
+	const std::vector<const char*> validationLayers = {
+		"VK_LAYER_LUNARG_standard_validation"
+	};
+
+	const std::vector<const char*> deviceExtensions = {
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+	};
+
+	VkResult CreateDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback) {
+		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
+		if (func != nullptr) {
+			return func(instance, pCreateInfo, pAllocator, pCallback);
+		}
+		else {
+			return VK_ERROR_EXTENSION_NOT_PRESENT;
+		}
+	}
+
+	void DestroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT callback, const VkAllocationCallbacks* pAllocator) {
+		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
+		if (func != nullptr) {
+			func(instance, callback, pAllocator);
+		}
 	}
 
 };
