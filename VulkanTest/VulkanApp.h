@@ -1,12 +1,86 @@
-#include <vector>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <chrono>
-#include <array>
-#include "NicksVulkanAppStructs.h"
-
 
 #pragma once
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
+#include <chrono>
+#include <array>
+#include <map>
+#include <vector>
+#include <iostream>
+#include <functional>
+#include <cstdlib>
+#include <stdexcept>
+#include <algorithm>
+#include <fstream>
+#include <set>
+#include <optional>
+#include <unordered_map>
+
+struct QueueFamilyIndices {
+	int graphicsFamily = -1;
+	int presentFamily = -1;
+	int transferFamily = -1;
+
+	bool isComplete() {
+		return graphicsFamily >= 0 && presentFamily >= 0 && transferFamily >= 0;
+	}
+};
+
+struct SwapChainSupportDetails {
+	VkSurfaceCapabilitiesKHR capabilities;
+	std::vector<VkSurfaceFormatKHR> formats;
+	std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct UniformBufferObject {
+	glm::mat4 model;
+	glm::mat4 view;
+	glm::mat4 proj;
+};
+
+struct Vertex {
+	glm::vec3 pos;
+	glm::vec3 color;
+	glm::vec2 texCoord;
+
+	bool operator==(const Vertex& other) const {
+		return pos == other.pos && color == other.color && texCoord == other.texCoord;
+	}
+
+	static VkVertexInputBindingDescription getBindingDescription();
+
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
+};
+
+struct MeshObject {
+
+	int width;
+	int height;
+
+	std::string MODEL_PATH;
+	std::string TEXTURE_PATH;
+
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
+	VkBuffer vertexBuffer;
+	VkDeviceMemory vertexBufferMemory;
+
+	MeshObject(int width, int height, std::string MODEL_PATH, std::string TEXTURE_PATH);
+
+	MeshObject();
+
+	void loadModel();
+	
+};
+
 class VulkanApp
 {
 public:
@@ -19,21 +93,13 @@ public:
 
 	const int MAX_FRAMES_IN_FLIGHT = 2;
 
+	void ShowModel(std::string MODEL_PATH, std::string TEXTURE_PATH, int texWidth, int texHeight);
+
 #ifdef NDEBUG
 	const bool enableValidationLayers = false;
 #else
 	const bool enableValidationLayers = true;
 #endif
-
-	const std::vector<Vertex> vertices = {
-		{ { -0.5f,-0.5f },{ 1.0f,0.0f,0.0f } },
-	{ { 0.5f,-0.5f },{ 0.0f,1.0f,0.0f } },
-	{ { 0.5f, 0.5f },{ 0.0f,0.0f,1.0f } },
-	{ { -0.5f, 0.5f },{ 1.0f,1.0f,1.0f } } };
-
-	const std::vector<uint16_t> indices = {
-		0, 1, 2, 2, 3, 0
-	};
 
 private:
 
@@ -44,6 +110,8 @@ private:
 	const std::vector<const char*> deviceExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME
 	};
+
+	MeshObject objectToShow;
 
 	GLFWwindow * window;
 
@@ -78,6 +146,16 @@ private:
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+
+	VkImageView textureImageView;
+	VkSampler textureSampler;
+
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
+
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
 
@@ -93,6 +171,8 @@ private:
 	size_t currentFrame;
 
 
+
+
 	void initWindow();
 	void initVulkan();
 	void mainLoop();
@@ -100,6 +180,7 @@ private:
 	void cleanup();
 	void drawFrame();
 	void updateUniformBuffer(uint32_t currentImage);
+	void createDepthResources();
 	void createDescriptorPool();
 	void createDescriptorSets();
 	void createDescriptorSetLayout();
@@ -107,18 +188,22 @@ private:
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 	void createVertexBuffer();
 	void createIndexBuffer();
-	void createUniformBuffers();
 	void createUniformBuffer();
 	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	void createSyncObjects();
 	void createCommandBuffers();
 	void createCommandPool();
+	void createTextureImage();
+	void createTextureSampler();
+	void createTextureImageView();
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	void createFramebuffers();
 	void createRenderPass();
 	void createGraphicsPipeline();
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	void createImageViews();
+	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 	void createSwapChain();
 	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
 	std::vector<const char*> getRequiredExtensions();
@@ -130,6 +215,15 @@ private:
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
 	void setupDebugCallback();
 	bool checkValidationLayerSupport();
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+	VkFormat findDepthFormat();
+	bool hasStencilComponent(VkFormat format);
+
+	VkCommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR> availablePresentModes);
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

@@ -2,11 +2,6 @@
 
 #include "VulkanApp.h"
 
-#include <cstdlib>
-#include <stdexcept>
-#include <iostream>
-
-
 int main() {
 	VulkanApp app;
 

@@ -1,0 +1,47 @@
+List of things needed:
+
+
+Render a background (object)
+
+Render a model (character)
+
+Render some canvas UI stuff (weight sliders and stuff)
+
+Get a UI system going
+
+Get Character posing
+
+Apply blend-shape changes to character
+
+Swap character Model
+
+Have physics on pieces of character (i.e. hair).
+
+Have a modular pipeline for creating assets and loading them
+
+Save screenshots
+
+IK pose the character.
+
+So, we need definitely some special effects
+Shadows
+
+loading skinned mesh with morph-targets
+
+Different types of rendering
+
+-automatic triangulation
+-hdr
+-multisampling
+-occlusion
+-pbr? metal or something
+-shadows
+-ssao
+-shader implementation
+-sss
+-texture handling
+
+modular in-app object loading from storage
+modular in-app texture loading etc... from storage
+
+
