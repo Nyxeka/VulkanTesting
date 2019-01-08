@@ -169,12 +169,12 @@ void VulkanApp::initVulkan() {
 
 	
 	createCommandPool(); // create the pool in memory that we'll be using to store the command buffers. We create here, then allocation appropriately..
-	createDepthResources();
+	createDepthResources(); // allocating stuff for the depth buffer
 	createFramebuffers(); // for each image in the swap-chain, we need to specify a buffer for passing data to that frame/image
 	ShowModel("models/chalet.obj", "textures/chalet.jpg", 800, 600);
-	createTextureImage();
-	createTextureImageView();
-	createTextureSampler();
+	createTextureImage(); 
+	createTextureImageView(); 
+	createTextureSampler(); 
 	createVertexBuffer(); // create the vertex buffer - we give it the list of vertices
 	createIndexBuffer(); // create the index buffer - for passing the indices of combined vertices for optimization purposes.
 	createUniformBuffer(); // create the Uniform  buffer, the idea is to be able to change shader information during run-time
